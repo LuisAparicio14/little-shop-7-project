@@ -1,10 +1,9 @@
 class Merchant < ApplicationRecord
   
-  validates_presence_of :name, 
-                        :status
+  validates :name, presence: true
+  validates :status, presence: true
 
   has_many :items, dependent: :destroy
-  has_many :bulk_discounts, dependent: :destroy
   has_many :invoice_items, through: :items
   has_many :invoices, through: :invoice_items
   has_many :transactions, through: :invoices
@@ -15,6 +14,12 @@ class Merchant < ApplicationRecord
 
   def top_five_cust
     customers.top_five_customers
+    # customers.joins(invoices: [:transactions]) #what tables do we need
+    #   .where(transactions: { result: 0 })# are there conditions for the data I want back
+    #   .select("customers.*, CONCAT(customers.first_name, ' ', customers.last_name) AS full_name, COUNT(transactions.id) as successful_transactions") #select is what I want back
+    #   .group('customers.id') #how do I want to organize the data
+    #   .order("successful_transactions DESC")  #how the group will be returned
+    #   .limit(5) #how many 
   end
 
   def not_shipped_invoices  
@@ -22,7 +27,7 @@ class Merchant < ApplicationRecord
       .joins(:invoice_items)
       .where.not(invoice_items: { status: 2 })
       .select('invoices.*, items.name AS item_name')
-      .order('invoices.created_at') 
+      .order('invoices.created_at') #
   end
 
   def enabled?
@@ -52,16 +57,5 @@ class Merchant < ApplicationRecord
     .select("invoices.created_at AS invoice_date")
     .where("merchants.id = #{self.id}")
     .first.invoice_date
-  end
-
-  def eligible_discount(quantity)
-    (b_discount(quantity)&.percentage_discount || 0).to_i
-  end
-
-  def b_discount(quantity)
-    bulk_discounts
-      .where("#{quantity} >= bulk_discounts.quantity_treshold")
-      .order("bulk_discounts.percentage_discount DESC")
-      .first
   end
 end
