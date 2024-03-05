@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe Invoice, type: :model do
   describe 'Validations' do
     it { should validate_presence_of :status }
+    it { should validate_presence_of :customer_id }
   end
 
   describe 'Relationships' do
@@ -53,6 +54,9 @@ RSpec.describe Invoice, type: :model do
     @trans_15 = create(:transaction, invoice_id: @invoice_5.id)
     
     @merchant_1 = create(:merchant, name: "Amazon") 
+    @merchant_2 = create(:merchant, name: "Walmart", status: 0)
+    @discount_m2_A = BulkDiscount.create!(percentage_discount: 20, quantity_treshold: 10, merchant_id: @merchant_2.id)
+    @discount_m2_B = BulkDiscount.create!(percentage_discount: 30, quantity_treshold: 15, merchant_id: @merchant_2.id)
 
     @item_1 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
     @item_2 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
@@ -60,6 +64,7 @@ RSpec.describe Invoice, type: :model do
     @item_4 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
     @item_5 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
     @item_6 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
+    @item_7 = create(:item, unit_price: 1, merchant_id: @merchant_2.id)
 
     @invoice_item_1 = create(:invoice_item, item_id: @item_1.id, invoice_id: @invoice_1.id, quantity: 1, unit_price: 1300, status: 0)
     @invoice_item_2 = create(:invoice_item, item_id: @item_2.id, invoice_id: @invoice_2.id, quantity: 1, unit_price: 1300, status: 0)
@@ -70,6 +75,7 @@ RSpec.describe Invoice, type: :model do
     @invoice_item_7 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_8.id, quantity: 1, unit_price: 1300, status: 0)
     @invoice_item_8 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_9.id, quantity: 1, unit_price: 1300, status: 0)
     @invoice_item_9 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_1.id, quantity: 4, unit_price: 5500, status: 2)
+    @invoice_item_10 = create(:invoice_item, item_id: @item_7.id, invoice_id: @invoice_1.id, quantity: 15, unit_price: 100, status: 2)
   end
 
   describe 'Class Methods' do
@@ -97,19 +103,39 @@ RSpec.describe Invoice, type: :model do
       end
     end
 
-    describe '#total_revenue' do
-      it "returns the total revenue of the invoice item" do
-        expect(@invoice_6.total_revenue).to eq(0)
-        expect(@invoice_1.total_revenue).to eq(23300)
+    describe ".brute_revenue" do
+      it "returns the correct net revenue to be generated" do
+        
+        expect(Invoice.brute_revenue).to eq(339)
+      end
+    end
+
+    describe ".net_revenue" do
+      it "returns the correct net revenue to be generated after discounts" do
+        expect(Invoice.net_revenue).to eq(237)
       end
     end
   end
 
   describe "#Instance Methods" do
+    describe ".eligible_discount" do
+      it "returns the correct discounts" do
+        expect(@invoice_1.eligible_discount).to eq(0.30)
+      end
+    end
+
     describe "#total_revenue_dollars" do
       it "returns the correct revenue that an invoice will generate" do
-        expect(@invoice_1.total_revenue_dollars).to eq(233.00)
+        expect(@invoice_1.total_revenue_dollars).to eq(248.00)
         expect(@invoice_2.total_revenue_dollars).to eq(13.00)
+      end
+    end
+
+    describe '#total_revenue' do
+      it "returns the total revenue of the invoice item" do
+        expect(@invoice_6.total_revenue).to eq(0)
+        expect(@invoice_1.total_revenue).to eq(24800)
+        expect(@invoice_2.total_revenue).to eq(1300)
       end
     end
   end

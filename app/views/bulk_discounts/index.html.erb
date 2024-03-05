@@ -1,0 +1,25 @@
+<h1>Merchant <%= @merchant.name %> Discounts</h1>
+<h3><%= link_to "Create New Discount", new_merchant_bulk_discount_path(@merchant.id) %></h3>
+
+<% @merchant.bulk_discounts.each do |discount| %>
+  <div id="bulk_discount-<%= discount.id%>" >
+    <p>Bulk Discount is <%= discount.percentage_discount %>% off <%= discount.quantity_treshold %> items</p>
+
+    <%= link_to "Discount Details", merchant_bulk_discount_path(@merchant.id, discount.id) %>
+
+    <%= button_to "Delete", merchant_bulk_discount_path(@merchant.id, discount.id), method: :delete, local: true %>
+  </div>
+<% end %>
+
+<section class="upcoming_holidays">
+  <h3>Upcoming US holidays:</h3>
+  <% @holidays.each do |holiday| %>
+    <div id="<%= holiday.name %>">
+      <li><%= holiday.name %><br> <%= holiday.date %></li>
+      <%= form_with(model: @merchant.bulk_discounts.build, url: merchant_bulk_discounts_path(@merchant.id), local: true, method: :post) do |f| %>
+        <%= f.hidden_field :holiday_name, value: holiday.name %>
+        <%= f.button "Create Discount" %>
+      <% end %>
+    </div>
+  <% end %>
+</section>
