@@ -32,18 +32,14 @@ class MerchantItemsController < ApplicationController
   end
 
   def create
-    item = Item.new(item_params)
-    
-    if item.save
-      redirect_to merchant_items_path(params[:merchant_id])
-    else 
-      redirect_to new_merchant_item_path(params[:merchant_id])
-      flash[:alert] =  "Error: #{error_message(item.errors)}"
-    end
+    @merch = Merchant.find(params[:merchant_id])
+    @merch.items.create(item_params)
+    redirect_to merchant_items_path(params[:merchant_id])
   end
 
   private 
+  
   def item_params
-    params.permit(:name, :description, :unit_price, :status, :merchant_id)
+    params.permit(:name, :description, :unit_price, :status)
   end
 end

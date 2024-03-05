@@ -1,8 +1,8 @@
 class Item < ApplicationRecord
   
-  validates_presence_of :name, 
-                        :description, 
-                        :unit_price
+  validates :name, presence: true
+  validates :description, presence: true
+  validates :unit_price, presence: true
 
   belongs_to :merchant 
   has_many :invoice_items, dependent: :destroy
@@ -12,8 +12,6 @@ class Item < ApplicationRecord
 
   enum status: ["disabled", "enabled"]
 
-  before_create :set_default_status
-  
   def self.enabled_items
     where(status: :enabled)
   end
@@ -43,10 +41,5 @@ class Item < ApplicationRecord
   def current_invoice_item(item, invoice)
     self.invoice_items
       .where(item_id: item.id, invoice_id: invoice.id).first
-  end
-
-  private
-  def set_default_status
-    self.status ||= 0
   end
 end
