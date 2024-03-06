@@ -148,4 +148,5 @@ RSpec.describe "Discounts#index", type: :feature do
       expect(current_path).to eq("/merchants/#{@merch_1.id}/discounts/#{@discount_1.id}")
     end
   end
+
 end
