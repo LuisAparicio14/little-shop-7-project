@@ -53,6 +53,7 @@ RSpec.describe Invoice, type: :model do
     @trans_15 = create(:transaction, invoice_id: @invoice_5.id)
     
     @merchant_1 = create(:merchant, name: "Amazon") 
+    @discount_1 = @merchant_1.discounts.create!(percent_discount: 20, quantity_threshold: 10)
 
     @item_1 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
     @item_2 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
@@ -66,7 +67,7 @@ RSpec.describe Invoice, type: :model do
     @invoice_item_3 = create(:invoice_item, item_id: @item_3.id, invoice_id: @invoice_3.id, quantity: 1, unit_price: 1300, status: 1)
     @invoice_item_4 = create(:invoice_item, item_id: @item_4.id, invoice_id: @invoice_4.id, quantity: 1, unit_price: 1300, status: 2)
     @invoice_item_5 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_5.id, quantity: 1, unit_price: 1300, status: 2)
-    @invoice_item_6 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_7.id, quantity: 1, unit_price: 1300, status: 0)
+    @invoice_item_6 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_7.id, quantity: 800, unit_price: 800, status: 0)
     @invoice_item_7 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_8.id, quantity: 1, unit_price: 1300, status: 0)
     @invoice_item_8 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_9.id, quantity: 1, unit_price: 1300, status: 0)
     @invoice_item_9 = create(:invoice_item, item_id: @item_5.id, invoice_id: @invoice_1.id, quantity: 4, unit_price: 5500, status: 2)
@@ -111,6 +112,26 @@ RSpec.describe Invoice, type: :model do
         expect(@invoice_1.total_revenue_dollars).to eq(233.00)
         expect(@invoice_2.total_revenue_dollars).to eq(13.00)
       end
+    end
+  end
+
+  describe "#methods for discounts" do
+    it "returns the discount item" do
+      # require 'pry' ; binding.pry
+
+      expect(@invoice_7.discount_item.first.id).to eq(@invoice_item_6.id)
+    end
+
+    it "returns the total discount" do
+      expect(@invoice_2.discount_total).to eq(128000)
+    end
+
+    it "returns the total discount revenue" do
+      expect(@invoice_7.total_discount_revenue).to eq(512000)
+    end
+
+    it "" do
+      
     end
   end
 end
