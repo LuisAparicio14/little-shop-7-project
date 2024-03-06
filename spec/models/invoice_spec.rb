@@ -117,8 +117,6 @@ RSpec.describe Invoice, type: :model do
 
   describe "#methods for discounts" do
     it "returns the discount item" do
-      # require 'pry' ; binding.pry
-
       expect(@invoice_7.discount_item.first.id).to eq(@invoice_item_6.id)
     end
 
@@ -130,8 +128,16 @@ RSpec.describe Invoice, type: :model do
       expect(@invoice_7.total_discount_revenue).to eq(512000)
     end
 
-    it "" do
-      
+    it "eligible discount" do
+      item_id = @item_5.id
+      discount = @invoice_7.eligible_discount(item_id)
+      expect(discount).to eq(@discount_1)
+    end
+
+    it "returns the discount with the id" do
+      item_id = @item_5.id
+      discount_id = @invoice_7.discount(item_id)
+      expect(discount_id).to eq(@discount_1.id)
     end
   end
 end

@@ -32,16 +32,16 @@ class Invoice < ApplicationRecord
   end
 
   def discount_item
-    x = InvoiceItem.joins(item: { merchant: :discounts})
+    dis_item = InvoiceItem.joins(item: { merchant: :discounts})
       .where("discounts.quantity_threshold <= invoice_items.quantity")
       .select("invoice_items.id, MAX(discounts.percent_discount / 100.0 * invoice_items.unit_price * invoice_items.quantity) AS discount_total")
       .group("invoice_items.id")
-    x
+    dis_item
   end
 
   def discount_total
-    x = discount_item
-    x.sum(&:discount_total)
+    total = discount_item
+    total.sum(&:discount_total)
   end
 
   def total_discount_revenue
