@@ -9,10 +9,15 @@
   <% @invoice.items.each do |item| %>
   <div id="item-<%= item.id %>">
     <h3><%= item.name %></h3>
-    <p><%= @invoice.total_revenue %></p>
+    <p>Total Revenue: <%= @invoice.total_revenue %></p>
+    <p>Total Discount Revenue: <%= @invoice.total_discount_revenue %></p>
     <p><%= item.current_invoice_item(item, @invoice).quantity %></p>
     <p><%= item.current_invoice_item(item, @invoice).unit_price %></p>
     <p>Invoice Status: <%= item.current_invoice_item(item, @invoice).status %></p>
+
+    <% if @invoice.eligible_discount(item.id)%>
+      <%= link_to "Applied Discount", "/merchants/#{@merchant.id}/discounts/#{@invoice.discount(item.id)}" %>   
+    <% end %>
 
     <%= form_with url:  merchant_item_path(item.merchant, item, invoice_id: @invoice.id), method: :patch, data: {turbo: false} do |f| %>
         Status: <%= f.select "status", options_for_select([["Disabled", 0], ["Enabled", 1]]), value: item.status%>

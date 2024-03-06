@@ -6,6 +6,7 @@ class Invoice < ApplicationRecord
   has_many :invoice_items, dependent: :destroy
   has_many :items, through: :invoice_items
   has_many :merchants, through: :items
+  has_many :discounts, through: :merchants
 
   enum status: ["in progress", "cancelled", "completed"]
   
@@ -28,5 +29,33 @@ class Invoice < ApplicationRecord
   
   def total_revenue
     self.invoice_items.sum("unit_price * quantity")
+  end
+
+  def discount_item
+    x = InvoiceItem.joins(item: { merchant: :discounts})
+      .where("discounts.quantity_threshold <= invoice_items.quantity")
+      .select("invoice_items.id, MAX(discounts.percent_discount / 100.0 * invoice_items.unit_price * invoice_items.quantity) AS discount_total")
+      .group("invoice_items.id")
+    x
+  end
+
+  def discount_total
+    x = discount_item
+    x.sum(&:discount_total)
+  end
+
+  def total_discount_revenue
+    total_revenue - discount_total
+  end
+
+  def eligible_discount(item_id)
+    invoice_item = self.invoice_items.find{|item| item.item_id == item_id}
+    self.discounts.find{|discount| discount.quantity_threshold <= invoice_item.quantity ? true : false }
+  end
+
+  def discount(item_id)
+    invoice_item = self.invoice_items.find{|item| item.item_id == item_id}
+    discount = self.discounts.find{|discount| discount.quantity_threshold <= invoice_item.quantity}
+    discount.id
   end
 end

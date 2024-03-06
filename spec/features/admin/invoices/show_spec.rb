@@ -16,6 +16,11 @@ RSpec.describe 'Admin Index Show', type: :feature do
       @merchant_1 = create(:merchant, name: "Amazon", status: 0) 
       @merchant_4 = create(:merchant, name: "Microsoft", status: 0) 
 
+      @discount_1 = @merchant_1.discounts.create!(percent_discount: 20, quantity_threshold: 10)
+      @discount_2 = @merchant_1.discounts.create!(percent_discount: 10, quantity_threshold: 5)
+  
+  
+
       @item_1 = create(:item, unit_price: 1, merchant_id: @merchant_1.id)
       @item_8 = create(:item, unit_price: 1, merchant_id: @merchant_4.id)
 
@@ -97,6 +102,19 @@ RSpec.describe 'Admin Index Show', type: :feature do
         expect(current_path).to eq(admin_invoice_path(@invoice_1))
         # And I see that my Invoice's status has now been updated
         expect(page).to have_content("Cancelled")
+      end
+    end
+
+    # 8: Admin Invoice Show Page: Total Revenue and Discounted Revenue
+    it "displays total revenue and discounted revenue" do
+      # As an admin
+      # When I visit an admin invoice show page
+      visit admin_invoice_path(@invoice_1)
+      within "#invoice_revenue" do
+      # Then I see the total revenue from this invoice (not including discounts)
+        expect(page).to have_content("Total Revenue: $233.00")
+      # And I see the total discounted revenue from this invoice which includes bulk discounts in the calculation
+        expect(page).to have_content("Total Discount Revenue: $23,300.00")
       end
     end
   end
